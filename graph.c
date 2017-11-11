@@ -1,5 +1,8 @@
-#include <stdlib.c>
+#include <stdlib.h>
+#include <string.h>
 #include "graph.h"
+
+extern ht_item_t DELETED_ITEM;
 
 void
 graph_edge_dtor(void *data)
@@ -65,7 +68,7 @@ graph_vertex_destroy(graph_vertex_t *v)
 		v->container->vertex_data_dtor(v->data);
 	} // end if
 	
-	sfree(v->key)
+	sfree(v->key);
 	
 	destroy_list(v->edges);
 	
@@ -77,7 +80,7 @@ graph_vertex_destroy(graph_vertex_t *v)
 void
 graph_vertex_dtor(void *data)
 {
-	return graph_vertex_destroy((graph_vertex_t *)data));
+	return graph_vertex_destroy((graph_vertex_t *)data);
 } // end graph_vertex_dtor()
 
 graph_edge_t *
@@ -331,15 +334,15 @@ graph_get_edge_node(graph_t *g, const char *src, const char *dest)
 		return NULL;
 	} // end if
 	
-	graph_vertex_t *r1 = graph_get_vertex(g, src->key);
-	graph_vertex_t *r2 = graph_get_vertex(g, dest->key);
+	graph_vertex_t *r1 = graph_get_vertex(g, src);
+	graph_vertex_t *r2 = graph_get_vertex(g, dest);
 	
 	if (!r1 || !r2)
 	{
-		return = NULL;
+		return NULL;
 	} // end if
 
-	return find_node_by_value(r1->edges, (void *)dest->key);
+	return find_node_by_value(r1->edges, (void *)dest);
 } // end graph_get_edge_node()
 
 int
@@ -404,7 +407,7 @@ graph_remove_edge(graph_t *g, const char *src, const char *dest)
 int
 graph_remove_all_edges(graph_t *g)
 {
-	if (!g || !g->vertices !g->vertices->items)
+	if (!g || !g->vertices || !g->vertices->items)
 	{
 		return -1;
 	} // end if

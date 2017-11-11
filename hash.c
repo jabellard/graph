@@ -10,7 +10,7 @@ static const ht_size_t PRIME_NUM1 = 523;
 
 static const ht_size_t PRIME_NUM2 = 619;
 
-static ht_item_t DELETED_ITEM = {NULL, NULL, NULL};
+ht_item_t DELETED_ITEM = {NULL, NULL, NULL};
 
 ht_item_t *
 create_ht_item(char *k, void *v)
@@ -46,7 +46,7 @@ _destroy_ht_item(ht_item_t *i, data_dtor_func_t dtor)
 	return 0;
 } // end _destroy_ht_item()
 
-static int
+int
 destroy_ht_item(ht_item_t *i)
 {
 	if (!i || !i->container)

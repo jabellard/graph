@@ -40,7 +40,7 @@ create_ht_item(char *k, void *v);
 int
 _destroy_ht_item(ht_item_t *i, data_dtor_func_t dtor);
 
-static int
+int
 destroy_ht_item(ht_item_t *i);
 
 ht_t *
