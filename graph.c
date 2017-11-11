@@ -68,7 +68,10 @@ graph_vertex_destroy(graph_vertex_t *v)
 		v->container->vertex_data_dtor(v->data);
 	} // end if
 	
-	sfree(v->key);
+	if (!v->container)
+	{
+		sfree(v->key);
+	} // end if
 	
 	destroy_list(v->edges);
 	
@@ -184,6 +187,7 @@ graph_add_vertex(graph_t *g, graph_vertex_t *v, int flags)
 		return -1;
 	} // end if
 	
+	v->container = g;
 	(g->size)++;
 	
 	return 0;
