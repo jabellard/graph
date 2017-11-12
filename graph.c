@@ -2,6 +2,23 @@
 #include <string.h>
 #include "graph.h"
 
+static void
+graph_edge_dtor(void *data);
+
+static int
+graph_edge_cmp(void *d1, void *d2);
+
+static void
+graph_vertex_dtor(void *data);
+
+static list_node_t *
+graph_get_edge_node(graph_t *g, char *src, char *dest);
+
+static void 
+safe_free(void **pp);
+
+#define sfree(p) safe_free((void**)&(p))
+
 extern ht_item_t DELETED_ITEM;
 
 static void
@@ -19,7 +36,7 @@ graph_edge_cmp(void *d1, void *d2)
 		return 0;
 	} // end if
 
-	if (strcmp(((graph_edge_t *)d1)->dest->key, (const char *)d2) == 0)
+	if (strcmp(((graph_edge_t *)d1)->dest->key, (char *)d2) == 0)
 	{
 		return 1;
 	} // end if
@@ -148,7 +165,7 @@ graph_destroy(graph_t *g)
 {
 	if (!g)
 	{
-		return NULL;
+		return;
 	} // end if
 	
 	if (g->vertices)
@@ -194,7 +211,7 @@ graph_add_vertex(graph_t *g, graph_vertex_t *v, int flags)
 } // end graph_add_vertex()
 
 int
-graph_has_vertex(graph_t *g, const char *key)
+graph_has_vertex(graph_t *g, char *key)
 {
 	if (!g || !g->vertices)
 	{
@@ -211,7 +228,7 @@ graph_has_vertex(graph_t *g, const char *key)
 } // end graph_has_vertex()
 
 graph_vertex_t *
-graph_get_vertex(graph_t *g, const char *key)
+graph_get_vertex(graph_t *g, char *key)
 {
 	if (!g || !g->vertices)
 	{
@@ -228,7 +245,7 @@ graph_get_all_vertices(graph_t *g)
 } // end graph_get_all_vertices()
 
 int
-graph_remove_vertex(graph_t *g, const char *key)
+graph_remove_vertex(graph_t *g, char *key)
 {
 	if (!g || !g->vertices || !g->vertices->items || !key)
 	{
@@ -237,7 +254,7 @@ graph_remove_vertex(graph_t *g, const char *key)
 	
 	size_t i = 0;
 	ht_item_t *curr_item = NULL;
-	for (i; i < g->vertices->size; i++)
+	for (; i < g->vertices->size; i++)
 	{
 		curr_item = g->vertices->items[i];
 		if (curr_item != NULL && curr_item != &DELETED_ITEM)
@@ -274,7 +291,7 @@ graph_remove_all_vertices(graph_t *g)
 	
 	size_t i = 0;
 	ht_item_t *curr_item = NULL;
-	for (i; i < g->vertices->size; i++)
+	for (; i < g->vertices->size; i++)
 	{
 		curr_item = g->vertices->items[i];
 		if (curr_item !=NULL && curr_item != &DELETED_ITEM)
@@ -331,7 +348,7 @@ graph_add_edge(graph_t *g, graph_edge_t *e)
 } // end graph_add_edge()
 
 static list_node_t *
-graph_get_edge_node(graph_t *g, const char *src, const char *dest)
+graph_get_edge_node(graph_t *g, char *src, char *dest)
 {
 	if (!g || !src || !dest)
 	{
@@ -350,7 +367,7 @@ graph_get_edge_node(graph_t *g, const char *src, const char *dest)
 } // end graph_get_edge_node()
 
 int
-graph_has_edge(graph_t *g, const char *src, const char *dest)
+graph_has_edge(graph_t *g, char *src, char *dest)
 {
 	list_node_t *n = graph_get_edge_node(g, src, dest);
 	
@@ -363,7 +380,7 @@ graph_has_edge(graph_t *g, const char *src, const char *dest)
 } // end graph_has_edge()
 
 graph_edge_t *
-graph_get_edge(graph_t *g, const char *src, const char *dest)
+graph_get_edge(graph_t *g, char *src, char *dest)
 {
 	list_node_t *n = graph_get_edge_node(g, src, dest);
 	
@@ -376,7 +393,7 @@ graph_get_edge(graph_t *g, const char *src, const char *dest)
 } // end graph_get_edge()
 
 const list_t *
-graph_vertex_get_all_edges(graph_t *g, const char *key)
+graph_vertex_get_all_edges(graph_t *g, char *key)
 {
 	graph_vertex_t *v = graph_get_vertex(g, key);
 	
@@ -389,7 +406,7 @@ graph_vertex_get_all_edges(graph_t *g, const char *key)
 } // end graph_vertex_get_all_edges()
 
 const list_t *
-graph_vertex_edges_of(graph_t *g, const char *key)
+graph_vertex_edges_of(graph_t *g, char *key)
 {
 	return NULL;
 } // end graph_vertex_edges_of()
@@ -401,7 +418,7 @@ graph_get_all_edges(graph_t *g)
 } // end graph_get_all_edges()
 
 int
-graph_remove_edge(graph_t *g, const char *src, const char *dest)
+graph_remove_edge(graph_t *g, char *src, char *dest)
 {
 	list_node_t *n = graph_get_edge_node(g, src, dest);
 	if (!n)
@@ -422,7 +439,7 @@ graph_remove_all_edges(graph_t *g)
 	
 	size_t i = 0;
 	ht_item_t *curr_item = NULL;
-	for (i; i < g->vertices->size; i++)
+	for (; i < g->vertices->size; i++)
 	{
 		curr_item = g->vertices->items[i];
 		if (curr_item != NULL && curr_item != &DELETED_ITEM)

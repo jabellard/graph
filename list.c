@@ -2,6 +2,11 @@
 #include <stdio.h>
 #include "list.h"
 
+static void 
+safe_free(void **pp);
+
+#define sfree(p) safe_free((void**)&(p))
+
 list_t * 
 list_create(data_dtor_func_t dtor, match_func_t match)
 {

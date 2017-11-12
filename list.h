@@ -95,8 +95,4 @@ list_find_node_at(list_t *l, list_index_t index);
 list_len_t
 list_get_lenght(list_t *l);
 
-static void 
-safe_free(void **pp);
-#define sfree(p) safe_free((void**)&(p))
-
 #endif // LIST_H

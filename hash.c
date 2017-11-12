@@ -4,6 +4,38 @@
 #include <string.h>
 #include "hash.h"
 
+static hash_func_data_t *
+hfd_create(char *str, ht_size_t ht_size, int i);
+
+static int
+hfd_destroy(hash_func_data_t *hfd);
+
+static ht_size_t
+get_hash_code(char *str, unsigned long pn, ht_size_t ht_size);
+
+static ht_size_t 
+get_ht_index(hash_func_data_t *hfd);
+
+static ht_size_t
+is_prime(ht_size_t x);
+
+static ht_size_t
+get_next_prime(ht_size_t x);
+
+static int 
+ht_resize(ht_t *ht, ht_size_t new_bs);
+
+static int
+ht_resize_up(ht_t *ht);
+
+static int
+ht_resize_down(ht_t *ht);
+
+static void
+safe_free(void **pp);
+
+#define sfree(p) safe_free((void**)&(p))
+
 static const ht_size_t MIN_BASE_SIZE = 53;
 
 static const ht_size_t PRIME_NUM1 = 523;
@@ -134,7 +166,7 @@ ht_destroy(ht_t *ht)
 	
 	int i = 0;
 	ht_item_t *curr_item = NULL;
-	for (i; i < ht->size; i++)
+	for (; i < ht->size; i++)
 	{
 		curr_item = ht->items[i];
 		if (curr_item != NULL && curr_item != &DELETED_ITEM)
@@ -197,7 +229,7 @@ get_hash_code(char *str, unsigned long pn, ht_size_t ht_size)
 	const int str_len = strlen(str);
 	
 	int i = 0;
-	for (i; i< str_len; i++)
+	for (; i< str_len; i++)
 	{
 		hash_code += (long)(pow(pn, str_len - (i + 1)) * str[i]);
 		hash_code %= ht_size;
@@ -491,7 +523,7 @@ is_prime(ht_size_t x)
 	} // end if
 	
 	ht_size_t i = 3;
-	for (i; i <= floor(sqrt((double)x)); i += 2)
+	for (; i <= floor(sqrt((double)x)); i += 2)
 	{
 		if (x % i == 0)
 		{
@@ -533,7 +565,7 @@ ht_resize(ht_t *ht, ht_size_t new_bs)
 	} // end if
 	
 	ht_size_t i = 0;
-	for (i; i < ht->size; i++)
+	for (; i < ht->size; i++)
 	{
 		ht_item_t *curr_item = ht->items[i];
 		if (curr_item != NULL && curr_item != &DELETED_ITEM)
