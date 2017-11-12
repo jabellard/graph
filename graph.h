@@ -30,10 +30,10 @@ typedef struct _graph_t
 	size_t size;
 }graph_t;
 
-void
+static void
 graph_edge_dtor(void *data);
 
-int
+static int
 graph_edge_cmp(void *d1, void *d2);
 
 graph_vertex_t *
@@ -42,7 +42,7 @@ graph_vertex_create(void *data, char * key);
 void
 graph_vertex_destroy(graph_vertex_t *v);
 
-void
+static void
 graph_vertex_dtor(void *data);
 
 graph_edge_t *
@@ -78,7 +78,7 @@ graph_remove_all_vertices(graph_t *g);
 int
 graph_add_edge(graph_t *g, graph_edge_t *e);
 
-list_node_t *
+static list_node_t *
 graph_get_edge_node(graph_t *g, const char *src, const char *dest);
 
 int

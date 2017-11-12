@@ -4,14 +4,14 @@
 
 extern ht_item_t DELETED_ITEM;
 
-void
+static void
 graph_edge_dtor(void *data)
 {
 	return graph_edge_destroy((graph_edge_t *)data);
 } // end edge_dtor()
 
 
-int
+static int
 graph_edge_cmp(void *d1, void *d2)
 {
 	if (!d1 || !(((graph_edge_t *)d1)->dest) || !d2)
@@ -80,7 +80,7 @@ graph_vertex_destroy(graph_vertex_t *v)
 	return;
 } // end graph_vertex_destroy()
 
-void
+static void
 graph_vertex_dtor(void *data)
 {
 	return graph_vertex_destroy((graph_vertex_t *)data);
@@ -330,7 +330,7 @@ graph_add_edge(graph_t *g, graph_edge_t *e)
 	return 0;
 } // end graph_add_edge()
 
-list_node_t *
+static list_node_t *
 graph_get_edge_node(graph_t *g, const char *src, const char *dest)
 {
 	if (!g || !src || !dest)
@@ -404,6 +404,10 @@ int
 graph_remove_edge(graph_t *g, const char *src, const char *dest)
 {
 	list_node_t *n = graph_get_edge_node(g, src, dest);
+	if (!n)
+	{
+		return -1;
+	} // end if
 	
 	return list_remove_and_destroy_node(n);
 } // end graph_remove_edge()
