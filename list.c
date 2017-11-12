@@ -3,7 +3,7 @@
 #include "list.h"
 
 list_t * 
-create_list(data_dtor_func_t dtor, match_func_t match)
+list_create(data_dtor_func_t dtor, match_func_t match)
 {
 	list_t *l = malloc(sizeof(list_t));
 	if (!l)
@@ -17,10 +17,10 @@ create_list(data_dtor_func_t dtor, match_func_t match)
 	l->data_dtor = dtor;
 	l->match = match;
 	return l;
-} // end create_list()
+} // end list_create()
 
 int 
-destroy_list(list_t *l)
+list_destroy(list_t *l)
 {
 	if (!l || !l->data_dtor)
 	{
@@ -33,7 +33,7 @@ destroy_list(list_t *l)
 	while ((l->len)--)
 	{
 		next = curr->next;
-		int res = destroy_list_node(curr);
+		int res = list_node_destroy(curr);
 		if (res == -1)
 		{
 			return -1;
@@ -43,10 +43,10 @@ destroy_list(list_t *l)
 	
 	sfree(l);
 	return 0;
-} // end destroy_list()
+} // end list_destroy()
 
 list_node_t *
-add_to_end(list_t *l, list_node_t *n)
+list_push_back(list_t *l, list_node_t *n)
 {
 	if (!l || !n)
 	{
@@ -71,11 +71,10 @@ add_to_end(list_t *l, list_node_t *n)
 	n->container = l;
 	(l->len)++;
 	return n;
-} // end add_to_end()
-
+} // end list_push_back()
 
 list_node_t *
-remove_from_end(list_t *l)
+list_pop_back(list_t *l)
 {
 	if (!l->len)
 	{
@@ -98,22 +97,22 @@ remove_from_end(list_t *l)
 	n->prev = NULL;
 	n->next = NULL;
 	return n;
-} // end remove_from_end()
+} // end list_pop_back()
 
 int
-remove_from_end_and_destroy(list_t *l)
+list_pop_back_and_destroy(list_t *l)
 {
-	list_node_t *n = remove_from_end(l);
+	list_node_t *n = list_pop_back(l);
 	if (!n)
 	{
 		return -1;
 	} // end if
 	
-	return destroy_list_node(n);
-} // end remove_from_end_and_destroy()
+	return list_node_destroy(n);
+} // end list_pop_back_and_destroy()
 
 list_node_t *
-add_to_start(list_t *l, list_node_t *n)
+list_push_front(list_t *l, list_node_t *n)
 {
 	if (!l || !n)
 	{
@@ -138,10 +137,10 @@ add_to_start(list_t *l, list_node_t *n)
 	n->container = l;
 	(l->len)++;
 	return n;
-} // end add_to_start()
+} // end list_push_front()
 
 list_node_t *
-remove_from_start(list_t *l)
+list_pop_front(list_t *l)
 {
 	if (!l->len)
 	{
@@ -165,22 +164,22 @@ remove_from_start(list_t *l)
 	n->prev = NULL;
 	n->next = NULL;
 	return n;
-} // end remove_from_start()
+} // end list_pop_front()
 
 int
-remove_from_start_and_destroy(list_t *l)
+list_pop_front_and_destroy(list_t *l)
 {
-	list_node_t *n = remove_from_start(l);
+	list_node_t *n = list_pop_front(l);
 	if (!n)
 	{
 		return -1;
 	} // end if
 	
-	return destroy_list_node(n);
-} // end remove_from_start_and_destroy()
+	return list_node_destroy(n);
+} // end list_pop_front_and_destroy()
 
 list_node_t *
-remove_list_node(list_node_t *n)
+list_remove_node(list_node_t *n)
 {
 	if (!n || !n->container)
 	{
@@ -188,11 +187,11 @@ remove_list_node(list_node_t *n)
 	} // end if
 	else if (n->container->head == n)
 	{
-		return remove_from_start(n->container);
+		return list_pop_front(n->container);
 	} // else if
 	else if (n->container->tail == n)
 	{
-		return remove_from_end(n->container);
+		return list_pop_back(n->container);
 	} // end else if
 	else
 	{
@@ -212,22 +211,22 @@ remove_list_node(list_node_t *n)
 		(n->container->len)--;
 		return n;
 	} // end else
-} // end remove_list_node()
+} // end list_remove_node()
 
 int 
-remove_and_destroy_list_node(list_node_t *n)
+list_remove_and_destroy_node(list_node_t *n)
 {
-	list_node_t *node = remove_list_node(n);
+	list_node_t *node = list_remove_node(n);
 	if (!node)
 	{
 		return -1;
 	} // end if
 	
-	return destroy_list_node(node);
-} // end remove_and_destroy_list_node()
+	return list_node_destroy(node);
+} // end list_remove_and_destroy_node()
 
 list_node_t *
-insert_before_node(list_node_t *old, list_node_t *new)
+list_insert_before(list_node_t *old, list_node_t *new)
 {
 	if (!old || !old->container || !new)
 	{
@@ -235,13 +234,13 @@ insert_before_node(list_node_t *old, list_node_t *new)
 	} // end if
 	else if (old->container->head == old)
 	{
-		return add_to_start(old->container, new);
+		return list_push_front(old->container, new);
 	} // end else if
 	else if (old->container->tail == old)
 	{
 		if (old->container->len == 1)
 		{
-			return add_to_start(old->container, new);
+			return list_push_front(old->container, new);
 			
 		} // end if
 		else
@@ -266,10 +265,10 @@ insert_before_node(list_node_t *old, list_node_t *new)
 	
 	(old->container->len)++;
 	return new;
-} // end insert_before_node()
+} // end list_insert_before()
 
 list_node_t *
-insert_after_node(list_node_t *old, list_node_t *new)
+list_insert_after(list_node_t *old, list_node_t *new)
 {
 	if (!old || !old->container || !new)
 	{
@@ -277,13 +276,13 @@ insert_after_node(list_node_t *old, list_node_t *new)
 	} // end if
 	else if (old->container->tail == old)
 	{
-		return add_to_end(old->container, new);
+		return list_push_back(old->container, new);
 	} // end else if
 	else if (old->container->head == old)
 	{
 		if (old->container->len == 1)
 		{
-			return add_to_end(old->container, new);
+			return list_push_back(old->container, new);
 		} // end if
 		else
 		{
@@ -305,10 +304,10 @@ insert_after_node(list_node_t *old, list_node_t *new)
 	
 	(old->container->len)++;
 	return new;
-} // end insert_after_node()
+} // end list_insert_after()
 
 list_iterator_t *
-create_list_iterator(list_t *l, list_direction_t d)
+list_iterator_create(list_t *l, list_direction_t d)
 {
 	if (l->len == 0)
 	{
@@ -333,7 +332,7 @@ create_list_iterator(list_t *l, list_direction_t d)
 	} // end else
 	
 	return it;
-} // end create_list_iterator()
+} // end list_iterator_create()
 
 list_node_t *
 list_iterator_next(list_iterator_t *it)
@@ -356,13 +355,13 @@ list_iterator_next(list_iterator_t *it)
 } // end list_iterator_next()
 
 void 
-destroy_list_iterator(list_iterator_t *it)
+list_iterator_destroy(list_iterator_t *it)
 {
 	sfree(it);
-} // end destroy_list_iterator()
+} // end list_iterator_destroy()
 
 list_node_t *
-create_list_node(void *data)
+list_node_create(void *data)
 {
 	list_node_t *n = malloc(sizeof(list_node_t));
 	if (!n)
@@ -375,10 +374,10 @@ create_list_node(void *data)
 	n->next = NULL;
 	n->data = data;
 	return n;
-} // end create_list_node()
+} // end list_node_create()
 
 int 
-destroy_list_node(list_node_t *n)
+list_node_destroy(list_node_t *n)
 {
 	if (!n || !n->container || !n->container->data_dtor)
 	{
@@ -389,17 +388,17 @@ destroy_list_node(list_node_t *n)
 	
 	sfree(n);
 	return 0;
-} // end destroy_list_node()
+} // end list_node_destroy()
 
 list_node_t *
-find_node_by_value(list_t *l, void *v)
+list_find_node(list_t *l, void *v)
 {
 	if (!l || !l->match)
 	{
 		return NULL;
 	} // end if
 	
-	list_iterator_t *it = create_list_iterator(l, HEAD);
+	list_iterator_t *it = list_iterator_create(l, HEAD);
 	if (!it)
 	{
 		return NULL;
@@ -411,17 +410,17 @@ find_node_by_value(list_t *l, void *v)
 	{
 		if (l->match(n->data, v))
 		{
-			destroy_list_iterator(it);
+			list_iterator_destroy(it);
 			return n;
 		} // end if
 	} // end while
 	
-	destroy_list_iterator(it);
+	list_iterator_destroy(it);
 	return NULL;
-} // end find_node_by_value()
+} // end list_find_node()
 
 list_node_t *
-find_node_at_index(list_t *l, list_index_t index)
+list_find_node_at(list_t *l, list_index_t index)
 {
 	
 	list_direction_t d = HEAD;
@@ -446,7 +445,7 @@ find_node_at_index(list_t *l, list_index_t index)
 	printf("index = %d, len = %d\n", index, l->len);
 	if  (index <= l->len)
 	{
-		list_iterator_t *it = create_list_iterator(l, d);
+		list_iterator_t *it = list_iterator_create(l, d);
 		if (!it)
 		{
 			return NULL;
@@ -457,16 +456,16 @@ find_node_at_index(list_t *l, list_index_t index)
 		{
 			n = list_iterator_next(it);
 		} // end while
-		destroy_list_iterator(it);
+		list_iterator_destroy(it);
 		return n;
 		
 	} // end if
 	
 	return NULL;
-} // end find_node_at_index()
+} // end list_find_node_at()
 
 list_len_t
-get_list_lenght(list_t *l)
+list_get_lenght(list_t *l)
 {
 	if (!l)
 	{
@@ -474,7 +473,7 @@ get_list_lenght(list_t *l)
 	} // end if
 	
 	return l->len;
-} // end get_list_lenght()
+} // end list_get_lenght()
 
 static void 
 safe_free(void **pp)

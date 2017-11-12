@@ -13,7 +13,7 @@ static const ht_size_t PRIME_NUM2 = 619;
 ht_item_t DELETED_ITEM = {NULL, NULL, NULL};
 
 ht_item_t *
-create_ht_item(char *k, void *v)
+ht_item_create(char *k, void *v)
 {
 	if (!k)
 	{
@@ -29,10 +29,10 @@ create_ht_item(char *k, void *v)
 	i->k = strdup(k);
 	i->v = v;
 	return i;
-} // end create_ht_item()
+} // end ht_item_create()
 
 int
-_destroy_ht_item(ht_item_t *i, data_dtor_func_t dtor)
+_ht_item_destroy(ht_item_t *i, data_dtor_func_t dtor)
 {
 	if (!i || !dtor)
 	{
@@ -44,21 +44,21 @@ _destroy_ht_item(ht_item_t *i, data_dtor_func_t dtor)
 	sfree(i->k);
 	sfree(i);
 	return 0;
-} // end _destroy_ht_item()
+} // end _ht_item_destroy()
 
 int
-destroy_ht_item(ht_item_t *i)
+ht_item_destroy(ht_item_t *i)
 {
 	if (!i || !i->container)
 	{
 		return -1;
 	} // end if
 	
-	return _destroy_ht_item(i, i->container->data_dtor);
-} // end destroy_ht_item()
+	return _ht_item_destroy(i, i->container->data_dtor);
+} // end ht_item_destroy()
 
 ht_t *
-_create_ht(int bs, data_dtor_func_t dtor, prime_finder_func_t pf, hash_func_t hf)
+_ht_create(int bs, data_dtor_func_t dtor, prime_finder_func_t pf, hash_func_t hf)
 {
 	if (!dtor)
 	{
@@ -111,21 +111,21 @@ _create_ht(int bs, data_dtor_func_t dtor, prime_finder_func_t pf, hash_func_t hf
 	} // end else
 	
 	return ht;
-} // end _create_ht()
+} // end _ht_create()
 
 ht_t *
-create_ht(data_dtor_func_t dtor)
+ht_create(data_dtor_func_t dtor)
 {
 	if (!dtor)
 	{
 		return NULL;
 	} // end if
 	
-	return _create_ht(MIN_BASE_SIZE, dtor, NULL, NULL);
-} // end create_ht()
+	return _ht_create(MIN_BASE_SIZE, dtor, NULL, NULL);
+} // end ht_create()
 
 int
-destroy_ht(ht_t *ht)
+ht_destroy(ht_t *ht)
 {
 	if (!ht || !ht->items)
 	{
@@ -139,7 +139,7 @@ destroy_ht(ht_t *ht)
 		curr_item = ht->items[i];
 		if (curr_item != NULL && curr_item != &DELETED_ITEM)
 		{
-			int res = destroy_ht_item(curr_item);
+			int res = ht_item_destroy(curr_item);
 			if (res == -1)
 			{
 				return -1;
@@ -150,10 +150,10 @@ destroy_ht(ht_t *ht)
 	sfree(ht->items);
 	sfree(ht);
 	return 0;
-} // end destroy_ht()
+} // end ht_destroy()
 
 static hash_func_data_t *
-create_hfd(char *str, ht_size_t ht_size, int i)
+hfd_create(char *str, ht_size_t ht_size, int i)
 {
 	if (!str)
 	{
@@ -170,10 +170,10 @@ create_hfd(char *str, ht_size_t ht_size, int i)
 	hfd->ht_size = ht_size;
 	hfd->i = i;
 	return hfd;
-} // end create_hfd()
+} // end hfd_create()
 
 static int
-destroy_hfd(hash_func_data_t *hfd)
+hfd_destroy(hash_func_data_t *hfd)
 {
 	if (!hfd)
 	{
@@ -183,7 +183,7 @@ destroy_hfd(hash_func_data_t *hfd)
 	sfree(hfd->str);
 	sfree(hfd);
 	return 0;
-} // end destroy_hfd()
+} // end hfd_destroy()
 
 static ht_size_t
 get_hash_code(char *str, unsigned long pn, ht_size_t ht_size)
@@ -229,7 +229,7 @@ get_ht_index(hash_func_data_t *hfd)
 } // end get_ht_index()
 
 int
-add_to_ht(ht_t *ht, ht_item_t *item, int flags)
+ht_add(ht_t *ht, ht_item_t *item, int flags)
 {
 	if (!ht || !ht->items || !ht->hash_func || !item)
 	{
@@ -239,14 +239,14 @@ add_to_ht(ht_t *ht, ht_item_t *item, int flags)
 	ht_size_t load = ht->count * 100 / ht->size;
 	if (load > 70)
 	{
-		int res = resize_ht_up(ht);
+		int res = ht_resize_up(ht);
 		if (res == -1)
 		{
 			return -1;
 		} // end if
 	} // end if
 	
-	hash_func_data_t *hfd = create_hfd(item->k, ht->size, 0);
+	hash_func_data_t *hfd = hfd_create(item->k, ht->size, 0);
 	if (!hfd)
 	{
 		return -1;
@@ -255,7 +255,7 @@ add_to_ht(ht_t *ht, ht_item_t *item, int flags)
 	ht_size_t index = ht->hash_func(hfd);
 	if (index == -1)
 	{
-		int res = destroy_hfd(hfd);
+		int res = hfd_destroy(hfd);
 		if (res == -1)
 		{
 			return -1;
@@ -272,7 +272,7 @@ add_to_ht(ht_t *ht, ht_item_t *item, int flags)
 		{
 			if (!flags)
 			{
-				int res = destroy_hfd(hfd);
+				int res = hfd_destroy(hfd);
 				if (res == -1)
 				{
 					return -1;
@@ -282,13 +282,13 @@ add_to_ht(ht_t *ht, ht_item_t *item, int flags)
 			} // end if
 			else
 			{
-				int res = destroy_hfd(hfd);
+				int res = hfd_destroy(hfd);
 				if (res == -1)
 				{
 					return -1;
 				} // end if
 								
-				res = destroy_ht_item(curr_item);
+				res = ht_item_destroy(curr_item);
 				if (res == -1)
 				{
 					return -1;
@@ -304,7 +304,7 @@ add_to_ht(ht_t *ht, ht_item_t *item, int flags)
 		index = ht->hash_func(hfd);
 		if (index == -1)
 		{
-			int res = destroy_hfd(hfd);
+			int res = hfd_destroy(hfd);
 			if (res == -1)
 			{
 				return -1;
@@ -321,17 +321,17 @@ add_to_ht(ht_t *ht, ht_item_t *item, int flags)
 	ht->items[index] = item;
 	(ht->count)++;
 	return 0;
-} // end add_to_ht()
+} // end ht_add()
 
 void *
-search_ht(ht_t *ht, char *k)
+ht_search(ht_t *ht, char *k)
 {
 	if (!ht || !ht->items || !ht->hash_func || !k)
 	{
 		return NULL;
 	} // end if
 
-	hash_func_data_t *hfd = create_hfd(k, ht->size, 0);
+	hash_func_data_t *hfd = hfd_create(k, ht->size, 0);
 	if (!hfd)
 	{
 		return NULL;
@@ -340,7 +340,7 @@ search_ht(ht_t *ht, char *k)
 	ht_size_t index = ht->hash_func(hfd);
 	if (index == -1)
 	{
-		int res = destroy_hfd(hfd);
+		int res = hfd_destroy(hfd);
 		if (res == -1)
 		{
 			return NULL;
@@ -355,7 +355,7 @@ search_ht(ht_t *ht, char *k)
 	{
 		if (strcmp(curr_item->k, k) == 0)
 		{
-			int res = destroy_hfd(hfd);
+			int res = hfd_destroy(hfd);
 			if (res == -1)
 			{
 				return NULL;
@@ -368,7 +368,7 @@ search_ht(ht_t *ht, char *k)
 		index = ht->hash_func(hfd);
 		if (index == -1)
 		{
-			int res = destroy_hfd(hfd);
+			int res = hfd_destroy(hfd);
 			if (res == -1)
 			{
 				return NULL;
@@ -381,17 +381,17 @@ search_ht(ht_t *ht, char *k)
 		i++;	
 	} // end while
 	
-	int res = destroy_hfd(hfd);
+	int res = hfd_destroy(hfd);
 	if (res == -1)
 	{
 		return NULL;
 	} // end if
 	
 	return NULL;
-} // end search_ht()
+} // end ht_search()
 
 int
-delete_from_ht(ht_t *ht, char *k)
+ht_delete(ht_t *ht, char *k)
 {
 	if (!ht || !ht->items || !ht->hash_func || !k)
 	{
@@ -401,14 +401,14 @@ delete_from_ht(ht_t *ht, char *k)
 	ht_size_t load = ht->count * 100 / ht->size;
 	if (load < 10)
 	{
-		int res = resize_ht_down(ht);
+		int res = ht_resize_down(ht);
 		if (res == -1)
 		{
 			return -1;
 		}
 	} // end if
 	
-	hash_func_data_t *hfd = create_hfd(k, ht->size, 0);
+	hash_func_data_t *hfd = hfd_create(k, ht->size, 0);
 	if (!hfd)
 	{
 		return -1;
@@ -417,7 +417,7 @@ delete_from_ht(ht_t *ht, char *k)
 	ht_size_t index = ht->hash_func(hfd);
 	if (index == -1)
 	{
-		int res = destroy_hfd(hfd);
+		int res = hfd_destroy(hfd);
 		if (res == -1)
 		{
 			return -1;
@@ -431,10 +431,10 @@ delete_from_ht(ht_t *ht, char *k)
 	{
 		if (strcmp(curr_item->k, k) == 0)
 		{
-			int res = destroy_ht_item(curr_item);
+			int res = ht_item_destroy(curr_item);
 			if (res == -1)
 			{
-				int res = destroy_hfd(hfd);
+				int res = hfd_destroy(hfd);
 				if (res == -1 )
 				{
 					return -1;
@@ -451,7 +451,7 @@ delete_from_ht(ht_t *ht, char *k)
 		index = ht->hash_func(hfd);
 		if (index == -1)
 		{
-			int res = destroy_hfd(hfd);
+			int res = hfd_destroy(hfd);
 			if (res == -1)
 			{
 				return -1;
@@ -463,14 +463,14 @@ delete_from_ht(ht_t *ht, char *k)
 		i++;	
 	} // end while
 	
-	int res = destroy_hfd(hfd);
+	int res = hfd_destroy(hfd);
 	if (res == -1)
 	{
 		return -1;
 	} // end if
 	
 	return -1;
-} // end delete_from_ht()
+} // end ht_delete()
 
 static ht_size_t
 is_prime(ht_size_t x)
@@ -514,7 +514,7 @@ get_next_prime(ht_size_t x)
 } // end get_next_prime()
 
 static int 
-resize_ht(ht_t *ht, ht_size_t new_bs)
+ht_resize(ht_t *ht, ht_size_t new_bs)
 {
 	if (!ht)
 	{
@@ -526,7 +526,7 @@ resize_ht(ht_t *ht, ht_size_t new_bs)
 		return 0;
 	} // end if
 	
-	ht_t *new_ht = _create_ht(new_bs, ht->data_dtor, ht->prime_finder, ht->hash_func);
+	ht_t *new_ht = _ht_create(new_bs, ht->data_dtor, ht->prime_finder, ht->hash_func);
 	if (!new_ht)
 	{
 		return -1;
@@ -538,7 +538,7 @@ resize_ht(ht_t *ht, ht_size_t new_bs)
 		ht_item_t *curr_item = ht->items[i];
 		if (curr_item != NULL && curr_item != &DELETED_ITEM)
 		{
-			int res = add_to_ht(new_ht, curr_item, 0);
+			int res = ht_add(new_ht, curr_item, 0);
 			if (res == -1)
 			{
 				return -1;
@@ -562,7 +562,7 @@ resize_ht(ht_t *ht, ht_size_t new_bs)
 	ht->items = new_ht->items;
 	new_ht->items = tmp_items;
 	
-	int res = destroy_ht(new_ht);
+	int res = ht_destroy(new_ht);
 	if (res == -1)
 	{
 		return -1;
@@ -571,10 +571,10 @@ resize_ht(ht_t *ht, ht_size_t new_bs)
 	{
 		return 0;
 	}
-} // end resize_ht()
+} // end ht_resize()
 
 static int
-resize_ht_up(ht_t *ht)
+ht_resize_up(ht_t *ht)
 {
 	if (!ht || ht->base_size == 0)
 	{
@@ -583,11 +583,11 @@ resize_ht_up(ht_t *ht)
 	
 	ht_size_t new_bs = ht->base_size * 2;
 	
-	return resize_ht(ht, new_bs);
-} // end resize_ht_up()
+	return ht_resize(ht, new_bs);
+} // end ht_resize_up()
 
 static int
-resize_ht_down(ht_t *ht)
+ht_resize_down(ht_t *ht)
 {
 	if (!ht || ht->base_size == 0)
 	{
@@ -596,10 +596,11 @@ resize_ht_down(ht_t *ht)
 	
 	ht_size_t new_bs = ht->base_size / 2;
 	
-	return resize_ht(ht, new_bs);
-} // end resize_ht_down()
+	return ht_resize(ht, new_bs);
+} // end ht_resize_down()
 
-static void safe_free(void **pp)
+static void 
+safe_free(void **pp)
 {
 	if (pp != NULL && *pp != NULL)
 	{
